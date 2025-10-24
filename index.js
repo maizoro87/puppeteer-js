@@ -1,72 +1,49 @@
+const express = require('express');
 const puppeteer = require('puppeteer');
+const app = express();
+const port = process.env.PORT || 3000;
 
-async function scrapeWebsite() {
-    let browser;
+app.use(express.json());
 
-    try {
-        console.log('Starting browser...');
-
-        // Launch browser
-        browser = await puppeteer.launch({
-            headless: true,
-            args: [
-                '--no-sandbox',
-                '--disable-setuid-sandbox',
-                '--disable-dev-shm-usage'
-            ]
-        });
-
-        // Create new page
-        const page = await browser.newPage();
-
-        // Set viewport size
-        await page.setViewport({ width: 1280, height: 720 });
-
-        // Navigate to website
-        console.log('Navigating to website...');
-        await page.goto('https://railway.com', {
-            waitUntil: 'networkidle2'
-        });
-
-        // Get page title
-        const title = await page.title();
-        console.log('Page title:', title);
-
-        // Get text content from h1
-        const heading = await page.$eval('h1', el => el.textContent);
-        console.log('Main heading:', heading);
-
-        // TODO: Add your scraping logic here
-        // Examples:
-
-        // Get all links
-        // const links = await page.$$eval('a', links =>
-        //   links.map(link => ({
-        //     text: link.textContent,
-        //     href: link.href
-        //   }))
-        // );
-
-        // Fill out a form
-        // await page.type('#search-input', 'your search term');
-        // await page.click('#search-button');
-        // await page.waitForNavigation();
-
-        // Wait for specific element
-        // await page.waitForSelector('.results', { timeout: 5000 });
-
-        console.log('Scraping completed successfully!');
-
-    } catch (error) {
-        console.error('Error occurred:', error);
-    } finally {
-        // Always close the browser
-        if (browser) {
-            await browser.close();
-            console.log('Browser closed');
-        }
+// MCP endpoint
+app.post('/mcp', async (req, res) => {
+  try {
+    const browser = await puppeteer.launch({
+      headless: true,
+      args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
+    
+    const page = await browser.newPage();
+    
+    // Handle the MCP request
+    const { method, params } = req.body;
+    
+    let result = {};
+    
+    if (method === 'navigate') {
+      await page.goto(params.url);
+      result = { success: true, url: params.url };
+    } else if (method === 'screenshot') {
+      const screenshot = await page.screenshot({ encoding: 'base64' });
+      result = { success: true, screenshot };
+    } else if (method === 'content') {
+      const content = await page.content();
+      result = { success: true, content };
     }
-}
+    
+    await browser.close();
+    res.json(result);
+    
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
 
-// Run the scraping function
-scrapeWebsite();
+// Health check
+app.get('/', (req, res) => {
+  res.send('MCP Browser Server is running!');
+});
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
+});
