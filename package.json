@@ -6,36 +6,18 @@
   "type": "module",
   "scripts": {
     "build": "tsc",
-    "start": "node dist/http-server.js",
-    "start:http": "node dist/http-server.js",
-    "dev": "tsc && node dist/http-server.js"
+    "start": "node dist/http-server.js"
   },
-  "keywords": [
-    "browser",
-    "automation",
-    "playwright",
-    "mcp",
-    "http",
-    "browser-automation",
-    "testing"
-  ],
-  "files": [
-    "dist/**/*",
-    "README.md",
-    "package.json"
-  ],
   "engines": {
     "node": ">=18.0.0"
   },
-  "author": "",
-  "license": "MIT",
   "dependencies": {
     "playwright": "^1.55.0",
-    "express": "^4.21.2",
-    "@types/express": "^5.0.0"
+    "express": "^4.21.2"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
+    "@types/express": "^5.0.0",
     "typescript": "^5.0.0"
   }
 }
